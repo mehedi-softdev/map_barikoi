@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BariKoiMapApps</string>
+    <string name="barikoi_api_key">MTYyNDpFQVg4VlFaMUtB</string>
+    <string name="maptiler_api_key">c3E4Y5gzEOS8e7f40Liz</string>
 </resources>
