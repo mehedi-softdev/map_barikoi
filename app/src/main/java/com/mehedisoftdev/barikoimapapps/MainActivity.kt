@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.WellKnownTileServer
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.Style
 import com.mehedisoftdev.barikoimapapps.databinding.ActivityMainBinding
 
@@ -14,24 +16,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Initialize Mapbox with your Barikoi API key
-        val BARIKOI_API_KEY: String = getString(R.string.barikoi_api_key)
-        val wellKnownTileServer = WellKnownTileServer.MapTiler
 
-        Mapbox.getInstance(
-            this, BARIKOI_API_KEY, wellKnownTileServer
-        )
 
+        val BARIKOI_API_KEY = getString(R.string.barikoi_api_key)
+        val styleUrl = "https://map.barikoi.com/styles/barikoi-bangla/style.json?key=$BARIKOI_API_KEY"
+
+
+        // Init Maplibre
+        Mapbox.getInstance(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.mapView.getMapAsync { map ->
-            map.setStyle(
-                Style.Builder()
-                    .fromUri("https://map.barikoi.com/styles/barikoi-bangla/style.json?key=${BARIKOI_API_KEY}")
-            ) {}
+            map.setStyle(styleUrl)
+            map.cameraPosition = CameraPosition.Builder().target(
+                LatLng(0.0, 0.0)
+            ).zoom(1.0).build()
         }
-
 
     }
 
