@@ -19,7 +19,8 @@ class MainActivity : AppCompatActivity() {
 
 
         val BARIKOI_API_KEY = getString(R.string.barikoi_api_key)
-        val styleUrl = "https://map.barikoi.com/styles/barikoi-bangla/style.json?key=$BARIKOI_API_KEY"
+        val styleUrl =
+            "https://map.barikoi.com/styles/barikoi-bangla/style.json?key=$BARIKOI_API_KEY"
 
 
         // Init Maplibre
@@ -29,9 +30,13 @@ class MainActivity : AppCompatActivity() {
 
         binding.mapView.getMapAsync { map ->
             map.setStyle(styleUrl)
-            map.cameraPosition = CameraPosition.Builder().target(
-                LatLng(0.0, 0.0)
-            ).zoom(1.0).build()
+            map.cameraPosition = CameraPosition
+                .Builder()
+                .target(
+                    LatLng(0.0, 0.0)
+                )
+                .zoom(1.0)
+                .build()
         }
 
     }
