@@ -50,7 +50,11 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // map library
-    implementation ("org.maplibre.gl:android-sdk:10.0.2")
+    implementation("org.maplibre.gl:android-sdk:10.2.0")
+
+
+    // play services (users current location )
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
 
 }
