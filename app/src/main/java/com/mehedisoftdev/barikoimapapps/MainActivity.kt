@@ -1,7 +1,6 @@
 package com.mehedisoftdev.barikoimapapps
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -10,23 +9,30 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.engine.LocationEngineRequest
 import com.mapbox.mapboxsdk.location.modes.CameraMode
+
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mehedisoftdev.barikoimapapps.databinding.ActivityMainBinding
+import com.mehedisoftdev.barikoimapapps.models.Place
+import com.mehedisoftdev.barikoimapapps.viewmodels.NearbyBankLocationViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -36,12 +42,13 @@ class MainActivity : AppCompatActivity() {
     // users location tracking
     private lateinit var mapboxMap: MapboxMap
     private var lastLocation: Location? = null
+    private lateinit var nearbyBankLocationViewModel: NearbyBankLocationViewModel
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
+        nearbyBankLocationViewModel = ViewModelProvider(this)[NearbyBankLocationViewModel::class.java]
 
         // Init Maplibre
         Mapbox.getInstance(this)
@@ -71,12 +78,12 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient.getCurrentLocation(LocationRequest.QUALITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location: Location? ->
                 lastLocation = location
-                focusLocation()
+                foucusUserLocation()
             }
     }
 
 
-    private fun focusLocation() {
+    private fun foucusUserLocation() {
         val BARIKOI_API_KEY = getString(R.string.barikoi_api_key)
         val styleUri =
             "https://map.barikoi.com/styles/barikoi-bangla/style.json?key=$BARIKOI_API_KEY"
@@ -94,7 +101,7 @@ class MainActivity : AppCompatActivity() {
                 .target(
                     LatLng(lastLocation!!.latitude, lastLocation!!.longitude)
                 )
-                .zoom(7.0)
+                .zoom(15.0)
                 .build()
         }
     }
@@ -123,7 +130,16 @@ class MainActivity : AppCompatActivity() {
         }
         locationComponent.isLocationComponentEnabled = true
         locationComponent.cameraMode = CameraMode.TRACKING
+        // now call locate banks to mark
+        loadBanksInfo(5.0, 10)
+    }
 
+    private fun loadBanksInfo(distance: Double, limit: Int) {
+        nearbyBankLocationViewModel.getNearbyBanksLiveData(this,
+            distance, limit,
+            lastLocation!!.longitude, lastLocation!!.latitude).observe(this, Observer {banks: List<Place> ->
+                createMarkersForBanks(banks)
+        })
     }
 
     private fun buildLocationComponentActivationOptions(
@@ -143,6 +159,18 @@ class MainActivity : AppCompatActivity() {
             .build()
     }
 
+
+    private fun createMarkersForBanks(banks: List<Place>) {
+        for (bank in banks) {
+            val markerOptions = MarkerOptions()
+                .position(LatLng(bank.latitude.toDouble(),
+                    bank.longitude.toDouble()))
+                .title(bank.name)
+                .icon(IconFactory.getInstance(this).fromResource(R.drawable.red_marker))
+
+            mapboxMap.addMarker(markerOptions)
+        }
+    }
 
 
     override fun onStart() {
