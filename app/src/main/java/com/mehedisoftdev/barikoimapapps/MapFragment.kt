@@ -3,8 +3,6 @@ package com.mehedisoftdev.barikoimapapps
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.location.Location
 import android.location.LocationRequest
@@ -14,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -22,8 +21,7 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.annotations.Icon
-import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -62,6 +60,10 @@ class MapFragment : Fragment() {
     private lateinit var mapboxMap: MapboxMap
     private var lastLocation: Location? = null
     private val nearbyBankLocationViewModel by viewModels<NearbyBankLocationViewModel>()
+
+
+    // for info window
+    private val bankMarkers = HashMap<Marker, Place>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -154,12 +156,13 @@ class MapFragment : Fragment() {
         locationComponent.isLocationComponentEnabled = true
         locationComponent.cameraMode = CameraMode.TRACKING
         // now call locate banks to mark
-        loadBanksInfo(5.0, 10)
+        loadBanksInfo(3.0, 10)
     }
 
     private fun loadBanksInfo(distance: Double, limit: Int) {
         nearbyBankLocationViewModel.getNearbyBanksLiveData(
             requireContext(),
+            "Bank",
             distance, limit,
             lastLocation!!.longitude, lastLocation!!.latitude
         ).observe(viewLifecycleOwner, Observer { banks: List<Place> ->
@@ -195,7 +198,23 @@ class MapFragment : Fragment() {
                 )
                 .title(bank.name)
 
-            mapboxMap.addMarker(markerOptions)
+           val marker =  mapboxMap.addMarker(markerOptions)
+            bankMarkers[marker] = bank
+            setMarkerClickEvent()
+        }
+    }
+
+    private fun setMarkerClickEvent() {
+        mapboxMap.setOnMarkerClickListener {place ->
+            val bank: Place? = bankMarkers[place]
+            bank?.let {
+               // now call another fragment and pass bank information
+                Toast.makeText(requireContext(),
+                    bank.toString(), Toast.LENGTH_SHORT)
+                    .show()
+            }
+
+            true
         }
     }
 

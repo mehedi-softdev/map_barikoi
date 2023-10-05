@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.mehedisoftdev.barikoimapapps.models.Place
 import com.mehedisoftdev.barikoimapapps.repository.NearbyBankLocationRepo
@@ -18,6 +17,7 @@ class NearbyBankLocationViewModel @Inject constructor(
 ) : ViewModel() {
     fun getNearbyBanksLiveData(
         context: Context,
+        category: String,
         distance: Double,
         limit: Int,
         lon: Double,
@@ -27,13 +27,10 @@ class NearbyBankLocationViewModel @Inject constructor(
 
         viewModelScope.launch {
             data.postValue(
-                nearbyBankLocationRepo.getNearbyPlaces(context, distance, limit, lon, lat)
+                nearbyBankLocationRepo.getNearbyPlaces(context, category, distance, limit, lon, lat)
             )
         }
 
-        val filteredBankData: LiveData<List<Place>> = data.map { places ->
-            places.filter { it.pType.toString().lowercase() == "bank" }
-        }
-        return filteredBankData
+        return data
     }
 }

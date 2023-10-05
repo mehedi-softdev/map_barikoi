@@ -11,6 +11,7 @@ class NearbyBankLocationRepo @Inject constructor(
 ) {
     suspend fun getNearbyPlaces(
         context: Context,
+        category: String,
         distance: Double,
         limit: Int,
         lon: Double,
@@ -23,7 +24,8 @@ class NearbyBankLocationRepo @Inject constructor(
             distance,
             limit,
             lon,
-            lat
+            lat,
+            category
         )
         return result.body()!!.places
     }
