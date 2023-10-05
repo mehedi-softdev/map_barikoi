@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/map_nav_graph"
+    app:startDestination="@id/mapFragment">
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.mehedisoftdev.barikoimapapps.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" >
+        <action
+            android:id="@+id/action_mapFragment_to_infoWindowFragment"
+            app:destination="@id/infoWindowFragment"
+            app:popUpTo="@id/mapFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/infoWindowFragment"
+        android:name="com.mehedisoftdev.barikoimapapps.InfoWindowFragment"
+        android:label="fragment_info_window"
+        tools:layout="@layout/fragment_info_window" />
+</navigation>
