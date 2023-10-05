@@ -193,7 +193,7 @@ class MapFragment : Fragment() {
                         bank.longitude.toDouble()
                     )
                 )
-                .title(bank.name)g
+                .title(bank.name)
 
             mapboxMap.addMarker(markerOptions)
         }
