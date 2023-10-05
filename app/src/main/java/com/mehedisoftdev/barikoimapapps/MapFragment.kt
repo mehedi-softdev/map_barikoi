@@ -1,6 +1,9 @@
 package com.mehedisoftdev.barikoimapapps
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -11,11 +14,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mapbox.mapboxsdk.Mapbox
@@ -33,6 +38,7 @@ import com.mehedisoftdev.barikoimapapps.databinding.FragmentMapBinding
 import com.mehedisoftdev.barikoimapapps.models.Place
 import com.mehedisoftdev.barikoimapapps.viewmodels.NearbyBankLocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MapFragment : Fragment() {
@@ -43,6 +49,16 @@ class MapFragment : Fragment() {
     // variables
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 50
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                // Permission granted
+                fetchUserLocation()
+            } else {
+                // do nothing for now
+            }
+        }
 
     // users location tracking
     private lateinit var mapboxMap: MapboxMap
@@ -57,6 +73,8 @@ class MapFragment : Fragment() {
         // Init Maplibre
         Mapbox.getInstance(requireContext())
 
+
+
         _binding = FragmentMapBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -64,34 +82,33 @@ class MapFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // get users current location and focus on map
-        getUsersLocation()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    private fun getUsersLocation() {
+// Check and request location permission when needed
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            // Permission is already granted, fetch user's location
+            fetchUserLocation()
         }
+
+
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private fun fetchUserLocation() {
         fusedLocationClient.getCurrentLocation(LocationRequest.QUALITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location: Location? ->
                 lastLocation = location
-                foucusUserLocation()
+                focusUserLocation()
             }
     }
 
-    private fun foucusUserLocation() {
+
+    private fun focusUserLocation() {
         val BARIKOI_API_KEY = getString(R.string.barikoi_api_key)
         val styleUri =
             "https://map.barikoi.com/styles/barikoi-bangla/style.json?key=$BARIKOI_API_KEY"
@@ -211,7 +228,10 @@ class MapFragment : Fragment() {
         binding.mapView.onDestroy()
     }
 
-
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
