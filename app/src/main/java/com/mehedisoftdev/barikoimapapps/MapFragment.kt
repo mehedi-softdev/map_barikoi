@@ -2,9 +2,9 @@ package com.mehedisoftdev.barikoimapapps
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.location.Location
 import android.location.LocationRequest
@@ -14,8 +14,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -24,6 +22,7 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
@@ -38,7 +37,6 @@ import com.mehedisoftdev.barikoimapapps.databinding.FragmentMapBinding
 import com.mehedisoftdev.barikoimapapps.models.Place
 import com.mehedisoftdev.barikoimapapps.viewmodels.NearbyBankLocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MapFragment : Fragment() {
@@ -195,8 +193,7 @@ class MapFragment : Fragment() {
                         bank.longitude.toDouble()
                     )
                 )
-                .title(bank.name)
-                .icon(IconFactory.getInstance(requireContext()).fromResource(R.drawable.red_marker))
+                .title(bank.name)g
 
             mapboxMap.addMarker(markerOptions)
         }
