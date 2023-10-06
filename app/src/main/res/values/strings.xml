@@ -3,4 +3,13 @@
     <string name="barikoi_api_key">MTYyNDpFQVg4VlFaMUtB</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="info_window">Info Window</string>
+    <string name="bank_name">Name: %1$s</string>
+    <string name="address">"Address: %1$s"</string>
+    <string name="post_code">"Post Code: %1$s"</string>
+    <string name="sub_type">"Sub Type: %1$s"</string>
+    <string name="distance_from_home">"Distance from your location: %1$s m"</string>
+    <string name="coordinates">"Coordinates: %1$s"</string>
+
+
 </resources>

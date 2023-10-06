@@ -18,8 +18,10 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.gson.Gson
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
@@ -33,6 +35,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mehedisoftdev.barikoimapapps.databinding.FragmentMapBinding
 import com.mehedisoftdev.barikoimapapps.models.Place
+import com.mehedisoftdev.barikoimapapps.utils.Constants
 import com.mehedisoftdev.barikoimapapps.viewmodels.NearbyBankLocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -156,7 +159,11 @@ class MapFragment : Fragment() {
         locationComponent.isLocationComponentEnabled = true
         locationComponent.cameraMode = CameraMode.TRACKING
         // now call locate banks to mark
-        loadBanksInfo(3.0, 10)
+        try { loadBanksInfo(3.0, 10) }
+        catch (e: Exception) {
+            // for now it is re calling loadBanks()
+            loadBanksInfo(3.0, 10)
+        }
     }
 
     private fun loadBanksInfo(distance: Double, limit: Int) {
@@ -198,20 +205,21 @@ class MapFragment : Fragment() {
                 )
                 .title(bank.name)
 
-           val marker =  mapboxMap.addMarker(markerOptions)
+            val marker = mapboxMap.addMarker(markerOptions)
             bankMarkers[marker] = bank
             setMarkerClickEvent()
         }
     }
 
+    // marker click event
     private fun setMarkerClickEvent() {
-        mapboxMap.setOnMarkerClickListener {place ->
+        mapboxMap.setOnMarkerClickListener { place ->
             val bank: Place? = bankMarkers[place]
             bank?.let {
-               // now call another fragment and pass bank information
-                Toast.makeText(requireContext(),
-                    bank.toString(), Toast.LENGTH_SHORT)
-                    .show()
+                // now call another fragment and pass bank information
+                val bundle: Bundle = Bundle()
+                bundle.putString(Constants.BANK_DATA, Gson().toJson(bank))
+                findNavController().navigate(R.id.action_mapFragment_to_infoWindowFragment, bundle)
             }
 
             true
