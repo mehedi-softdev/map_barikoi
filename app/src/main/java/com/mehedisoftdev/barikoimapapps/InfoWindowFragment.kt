@@ -63,7 +63,7 @@ class InfoWindowFragment : Fragment() {
         binding.distanceFromHome.text =
             String.format(getString(R.string.distance_from_home), distance)
         binding.coordinates.text =
-            String.format(getString(R.string.coordinates), "(${bank.longitude}, ${bank.latitude})")
+            String.format(getString(R.string.coordinates), "(${bank.latitude}, ${bank.longitude})")
     }
 
 

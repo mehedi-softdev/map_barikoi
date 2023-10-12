@@ -15,6 +15,10 @@ import javax.inject.Inject
 class NearbyBankLocationViewModel @Inject constructor(
     private val nearbyBankLocationRepo: NearbyBankLocationRepo
 ) : ViewModel() {
+    private var _bankData = MutableLiveData<List<Place>>()
+    val bankData: LiveData<List<Place>>
+        get() = _bankData
+
     fun getNearbyBanksLiveData(
         context: Context,
         category: String,
@@ -30,6 +34,7 @@ class NearbyBankLocationViewModel @Inject constructor(
                 nearbyBankLocationRepo.getNearbyPlaces(context, category, distance, limit, lon, lat)
             )
         }
+        _bankData = data
 
         return data
     }

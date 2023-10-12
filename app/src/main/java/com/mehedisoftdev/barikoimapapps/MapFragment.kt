@@ -5,14 +5,12 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
-import android.location.LocationRequest
 import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -38,6 +36,7 @@ import com.mehedisoftdev.barikoimapapps.models.Place
 import com.mehedisoftdev.barikoimapapps.utils.Constants
 import com.mehedisoftdev.barikoimapapps.viewmodels.NearbyBankLocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.HashMap
 
 @AndroidEntryPoint
 class MapFragment : Fragment() {
@@ -103,7 +102,7 @@ class MapFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun fetchUserLocation() {
-        fusedLocationClient.getCurrentLocation(LocationRequest.QUALITY_HIGH_ACCURACY, null)
+        fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 lastLocation = location
                 focusUserLocation()
@@ -159,22 +158,23 @@ class MapFragment : Fragment() {
         locationComponent.isLocationComponentEnabled = true
         locationComponent.cameraMode = CameraMode.TRACKING
         // now call locate banks to mark
-        try { loadBanksInfo(3.0, 10) }
-        catch (e: Exception) {
-            // for now it is re calling loadBanks()
-            loadBanksInfo(3.0, 10)
-        }
+        loadBanksInfo(3.0, 10)
     }
 
     private fun loadBanksInfo(distance: Double, limit: Int) {
-        nearbyBankLocationViewModel.getNearbyBanksLiveData(
-            requireContext(),
-            "Bank",
-            distance, limit,
-            lastLocation!!.longitude, lastLocation!!.latitude
-        ).observe(viewLifecycleOwner, Observer { banks: List<Place> ->
-            createMarkersForBanks(banks)
-        })
+        val cachedBankData = nearbyBankLocationViewModel.bankData.value
+        if (cachedBankData != null && cachedBankData.isNotEmpty()) {
+            createMarkersForBanks(cachedBankData)
+        } else {
+            nearbyBankLocationViewModel.getNearbyBanksLiveData(
+                requireContext(),
+                "Bank",
+                distance, limit,
+                lastLocation!!.longitude, lastLocation!!.latitude
+            ).observe(viewLifecycleOwner, Observer { banks: List<Place> ->
+                createMarkersForBanks(banks)
+            })
+        }
     }
 
     private fun buildLocationComponentActivationOptions(
